@@ -4,7 +4,7 @@ import useFretboard from '@/use/fretboard';
 import { CHROMATIC_SCALE } from '@/utilities/constants';
 import { shuffleArray, getCommonElementsCount } from '@/utilities/utils';
 
-const QUIZ_QUESTION_COUNT = 2;
+const QUIZ_QUESTION_COUNT = 5;
 
 const questions = ref([]);
 const correctAnswers = ref([]);
