@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="fret"
-    :style="{width: `${fretWidth}%`}"
-  >
+  <div class="fret" :style="{width: `${fretWidth}%`}">
     <span>{{ number }}</span>
     <div class="markers"></div>
   </div>

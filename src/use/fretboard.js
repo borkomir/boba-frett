@@ -6,6 +6,8 @@ import { getFretWidth, getStringNotes } from '@/utilities/notes';
 const MIN_FRET_COUNT = 12;
 const MAX_FRET_COUNT = 24;
 
+const notesVisible = ref(true);
+const highlightedNote = ref('');
 const fretCount = ref(20);
 const stringCount = ref(4);
 const tuningIndex = ref(0);
@@ -38,6 +40,8 @@ export default function useFretboard() {
   return {
     tunings: TUNINGS,
     tuningNotes,
+    notesVisible,
+    highlightedNote,
     addFret,
     removeFret,
     calculateFretWidth,

@@ -1,12 +1,11 @@
 <template>
   <Settings />
-  <Quiz v-if="quizInProgress" />
+  <Quiz v-if="isQuizInProgress" />
   <Fretboard />
 </template>
 
 <script>
-import { useStore } from 'vuex';
-import { computed } from 'vue';
+import useQuiz from '@/use/quiz';
 
 import Settings from '@/components/Settings.vue';
 import Fretboard from '@/components/Fretboard.vue';
@@ -19,10 +18,10 @@ export default {
     Quiz,
   },
   setup() {
-    const { state: { quiz } } = useStore();
+    const { isQuizInProgress } = useQuiz();
 
     return {
-      quizInProgress: computed(() => quiz.questions.length > 0),
+      isQuizInProgress,
     };
   },
 };

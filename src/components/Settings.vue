@@ -42,10 +42,10 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
 
 import useFretboard from '@/use/fretboard';
+import useQuiz from '@/use/quiz';
 
 export default {
   name: 'Settings',
@@ -57,7 +57,7 @@ export default {
       settings: { stringCount, tuningIndex, fretCount },
     } = useFretboard();
 
-    const { commit, state: { quiz } } = useStore();
+    const { isQuizInProgress, startQuiz } = useQuiz();
 
     const stringCountOptions = computed(
       () => Object.keys(tunings).map(
@@ -71,26 +71,23 @@ export default {
       ),
     );
 
-    // FIXME: move to shared composition function
-    const isQuizInProgress = computed(() => quiz.questions.length > 0);
-
     const setStringCount = (option) => {
-      if (!isQuizInProgress.value) {
-        stringCount.value = option.newValue;
-        tuningIndex.value = 0; // reset tuning index
-      }
+      if (isQuizInProgress.value) return;
+
+      stringCount.value = option.newValue;
+      tuningIndex.value = 0; // reset tuning index
     };
 
     const setTuning = (option) => {
-      if (!isQuizInProgress.value) {
-        tuningIndex.value = option.newValue;
-      }
+      if (isQuizInProgress.value) return;
+
+      tuningIndex.value = option.newValue;
     };
 
     const launchQuiz = () => {
-      if (!isQuizInProgress.value) {
-        commit('startQuiz');
-      }
+      if (isQuizInProgress.value) return;
+
+      startQuiz();
     };
 
     const methods = {

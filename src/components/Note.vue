@@ -7,23 +7,23 @@
     <span
       class="note z-30"
       :class="{
-        'concelead': !isVisible,
+        'concelead': !notesVisible,
         highlighted: note===highlightedNote,
         selected: isSelected,
         correct: isSelectedCorrectly,
         incorrect: isSelectedIncorrectly
       }"
     >
-      {{ isVisible ? note : '?' }}
+      {{ notesVisible ? note : '?' }}
     </span>
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
 
 import useFretboard from '@/use/fretboard';
+import useQuiz from '@/use/quiz';
 
 export default {
   name: 'Note',
@@ -33,66 +33,71 @@ export default {
     fret: Number,
   },
   setup(props) {
-    const { calculateFretWidth } = useFretboard();
+    const {
+      calculateFretWidth,
+      highlightedNote,
+      notesVisible,
+    } = useFretboard();
 
-    const store = useStore();
-    const { commit, state } = store;
-    const { quiz } = state;
+    const {
+      scores,
+      isQuizInProgress,
+      selectedNotes,
+      correctAnswers,
+      addToSelected,
+      removeFromSelected,
+    } = useQuiz();
 
-    const highlightedNote = computed(() => state.highlightedNote);
-    const isVisible = computed(() => state.notesVisible);
-    const isQuizInProgress = computed(() => quiz.questions.length > 0);
-    const currentQuestionIndex = computed(() => quiz.scores.length - 1);
+    const currentQuestionIndex = computed(() => scores.value.length - 1);
 
     const isSelected = computed(() => (
-      quiz.selectedNotes[props.stringIndex]
-        && quiz.selectedNotes[props.stringIndex].indexOf(props.fret) !== -1
+      selectedNotes.value[props.stringIndex]
+      && selectedNotes.value[props.stringIndex].indexOf(props.fret) !== -1
     ));
 
     const isSelectedCorrectly = computed(() => (
       isQuizInProgress.value
-      && currentQuestionIndex.value >= 0
-      && isVisible.value
       && isSelected.value
-      && quiz.correctAnswers[currentQuestionIndex.value][
+      && notesVisible.value
+      && currentQuestionIndex.value >= 0
+      && correctAnswers.value[currentQuestionIndex.value][
         props.stringIndex].indexOf(props.fret) !== -1
     ));
 
     const isSelectedIncorrectly = computed(() => (
       isQuizInProgress.value
       && currentQuestionIndex.value >= 0
-      && isVisible.value
+      && notesVisible.value
       && (
         (
           isSelected.value
-          && quiz.correctAnswers[currentQuestionIndex.value][
+          && correctAnswers.value[currentQuestionIndex.value][
             props.stringIndex].indexOf(props.fret) === -1
         ) || (
           !isSelected.value
-          && quiz.correctAnswers[currentQuestionIndex.value][
+          && correctAnswers.value[currentQuestionIndex.value][
             props.stringIndex].indexOf(props.fret) !== -1
         )
       )
     ));
 
     const handleClick = () => {
-      if (isVisible.value) {
-        // learning mode
-        if (!isQuizInProgress.value) {
-          commit('setHighlightedNote', props.note);
+      if (isQuizInProgress.value) {
+        // quiz mode
+        if (!notesVisible.value) {
+          (isSelected.value ? removeFromSelected : addToSelected)(
+            { string: props.stringIndex, index: props.fret },
+          );
         }
       } else {
-        // quiz mode
-        commit(
-          isSelected.value ? 'removeFromSelected' : 'addToSelected',
-          { string: props.stringIndex, index: props.fret },
-        );
+        // learning mode
+        highlightedNote.value = props.note;
       }
     };
 
     return {
       highlightedNote,
-      isVisible,
+      notesVisible,
       isQuizInProgress,
       currentQuestionIndex,
       fretWidth: computed(() => calculateFretWidth(props.fret)),

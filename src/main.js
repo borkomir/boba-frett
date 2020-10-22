@@ -5,7 +5,6 @@ import AppDropdown from '@/components/ui/AppDropdown.vue';
 import App from './App.vue';
 
 import router from './router';
-import store from './store';
 
 import '@/assets/styles/tailwind.css';
 
@@ -16,4 +15,4 @@ app.config.productionTip = false;
 app.component('AppDropdown', AppDropdown);
 app.component('AppButton', AppButton);
 
-app.use(store).use(router).mount('#app');
+app.use(router).mount('#app');
