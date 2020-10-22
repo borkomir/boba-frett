@@ -8,7 +8,7 @@
       class="note z-30"
       :class="{
         'concelead': !isVisible,
-        highlighted,
+        highlighted: note===highlightedNote,
         selected: isSelected,
         correct: isSelectedCorrectly,
         incorrect: isSelectedIncorrectly
@@ -22,7 +22,8 @@
 <script>
 import { useStore } from 'vuex';
 import { computed } from 'vue';
-import { getFretWidth } from '@/utilities/notes';
+
+import useFretboard from '@/use/fretboard';
 
 export default {
   name: 'Note',
@@ -30,19 +31,18 @@ export default {
     note: String,
     stringIndex: Number,
     fret: Number,
-    highlighted: Boolean,
   },
-  setup(props, { emit }) {
+  setup(props) {
+    const { calculateFretWidth } = useFretboard();
+
     const store = useStore();
     const { commit, state } = store;
-    const { settings, quiz } = state;
+    const { quiz } = state;
 
+    const highlightedNote = computed(() => state.highlightedNote);
     const isVisible = computed(() => state.notesVisible);
     const isQuizInProgress = computed(() => quiz.questions.length > 0);
     const currentQuestionIndex = computed(() => quiz.scores.length - 1);
-    const fretWidth = computed(() => (
-      getFretWidth(props.fret, settings.fretCount + 1)
-    ));
 
     const isSelected = computed(() => (
       quiz.selectedNotes[props.stringIndex]
@@ -83,15 +83,19 @@ export default {
         }
       } else {
         // quiz mode
-        emit(isSelected.value ? 'unselected' : 'selected');
+        commit(
+          isSelected.value ? 'removeFromSelected' : 'addToSelected',
+          { string: props.stringIndex, index: props.fret },
+        );
       }
     };
 
     return {
+      highlightedNote,
       isVisible,
       isQuizInProgress,
       currentQuestionIndex,
-      fretWidth,
+      fretWidth: computed(() => calculateFretWidth(props.fret)),
       isSelected,
       isSelectedCorrectly,
       isSelectedIncorrectly,
@@ -153,7 +157,6 @@ export default {
   @apply text-white bg-black opacity-100 text-center rounded-md text-xs leading-none;
   @apply relative p-1;
 
-  font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
   text-shadow: 1px 1px rgba(0, 0, 0, 0.4);
   left: -3px;
 }

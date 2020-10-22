@@ -6,7 +6,7 @@ Jam and improvise easily, get better at composing songs.
 
 Training project used to explore new stuff shipped with Vue 3.0 and to flirt a bit with Tailwind.css.
 
-Demo available at: [TBA]
+Demo available thanks to **[Netlify](https://boba-frett.netlify.app/)**.
 
 ---
 

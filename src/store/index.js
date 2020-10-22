@@ -1,17 +1,20 @@
 import { createStore } from 'vuex';
-import { CHROMATIC_SCALE, TUNINGS } from '@/utilities/constants';
+import { CHROMATIC_SCALE } from '@/utilities/constants';
 import { shuffleArray } from '@/utilities/utils';
-import { getStringNotes } from '@/utilities/notes';
+
+import useFretboard from '@/use/fretboard';
+
+// FIXME: store using composition function - just a temporary abomination
+const {
+  tuningNotes,
+  getAllFretNotes,
+  // settings: { fretCount },
+} = useFretboard();
 
 const QUIZ_QUESTION_COUNT = 1;
 
 const stateData = {
   highlightedNote: '',
-  settings: {
-    fretCount: 20,
-    stringCount: 4,
-    tuningIndex: 0,
-  },
   notesVisible: true,
   quiz: {
     selectedNotes: {},
@@ -22,13 +25,6 @@ const stateData = {
 };
 
 const mutations = {
-  setStringCount(state, stringCount) {
-    state.settings.stringCount = stringCount;
-    state.settings.tuningIndex = 0;
-  },
-  setTuning(state, tuningIndex) {
-    state.settings.tuningIndex = tuningIndex;
-  },
   setHighlightedNote(state, note) {
     state.highlightedNote = note;
   },
@@ -37,12 +33,6 @@ const mutations = {
   },
   showNotes(state) {
     state.notesVisible = true;
-  },
-  addFret(state) {
-    if (state.settings.fretCount < 24) state.settings.fretCount += 1;
-  },
-  removeFret(state) {
-    if (state.settings.fretCount > 12) state.settings.fretCount -= 1;
   },
   addToSelected(state, noteDetails) {
     if (state.quiz.selectedNotes[noteDetails.string] !== undefined) {
@@ -62,13 +52,12 @@ const mutations = {
   startQuiz(state) {
     state.highlightedNote = '';
     state.quiz.questions = shuffleArray(CHROMATIC_SCALE).slice(0, QUIZ_QUESTION_COUNT);
-    const tuning = TUNINGS[state.settings.stringCount][state.settings.tuningIndex].notes;
+    const tuning = tuningNotes.value;
     for (let q = 0; q < state.quiz.questions.length; q += 1) {
       const correctAnswer = {};
       for (let s = 0; s < tuning.length; s += 1) {
-        correctAnswer[s] = getStringNotes(
-          tuning[s], state.settings.fretCount,
-        ).reduce((acc, n, i) => (state.quiz.questions[q] === n ? acc.concat(i) : acc), []);
+        correctAnswer[s] = getAllFretNotes(tuning[s])
+          .reduce((acc, n, i) => (state.quiz.questions[q] === n ? acc.concat(i) : acc), []);
       }
       state.quiz.correctAnswers.push(correctAnswer);
     }

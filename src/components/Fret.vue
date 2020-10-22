@@ -9,9 +9,8 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
-import { getFretWidth } from '@/utilities/notes';
+import useFretboard from '@/use/fretboard';
 
 export default {
   name: 'Fret',
@@ -19,10 +18,10 @@ export default {
     number: Number,
   },
   setup(props) {
-    const { state: { settings } } = useStore();
+    const { calculateFretWidth } = useFretboard();
+
     return {
-      fretCount: computed(() => settings.fretCount),
-      fretWidth: computed(() => getFretWidth(props.number, settings.fretCount + 1)),
+      fretWidth: computed(() => calculateFretWidth(props.number)),
     };
   },
 };
@@ -37,7 +36,6 @@ export default {
   @apply w-5 h-5 bg-gray-300 text-gray-500 rounded-full;
   @apply text-xs text-center absolute cursor-default;
 
-  font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
   left: 50%;
   bottom: -30px;
   margin-left: -15px;

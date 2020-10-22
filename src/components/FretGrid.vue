@@ -1,13 +1,12 @@
 <template>
   <div class="fret-grid">
-    <Fret v-for="fretNumber in (frets+1)"
+    <Fret v-for="fretNumber in (fretCount+1)"
       :key="fretNumber" :number="fretNumber-1" />
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex';
-import { computed } from 'vue';
+import useFretboard from '@/use/fretboard';
 import Fret from '@/components/Fret.vue';
 
 export default {
@@ -16,9 +15,9 @@ export default {
     Fret,
   },
   setup() {
-    const { state: { settings } } = useStore();
+    const { settings: { fretCount } } = useFretboard();
     return {
-      frets: computed(() => settings.fretCount),
+      fretCount,
     };
   },
 };

@@ -81,21 +81,17 @@
 import { useStore } from 'vuex';
 import { ref, computed } from 'vue';
 
-import { TUNINGS } from '@/utilities/constants';
+import useFretboard from '@/use/fretboard';
 import { getCommonElementsCount } from '@/utilities/utils';
 
 export default {
   name: 'Quiz',
   setup() {
-    const { getters, commit, state: { settings, quiz } } = useStore();
+    const { getters, commit, state: { quiz } } = useStore();
     const scoringRevealed = ref(false);
     const summaryRevealed = ref(false);
 
-    function getTuningNotes() {
-      return TUNINGS[settings.stringCount][settings.tuningIndex].notes;
-    }
-
-    const tuningNotes = computed(getTuningNotes);
+    const { tuningNotes } = useFretboard();
 
     const isQuizInProgress = computed(() => quiz.questions.length > 0);
 

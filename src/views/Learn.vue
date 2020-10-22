@@ -32,8 +32,4 @@ export default {
 body {
   @apply flex items-center justify-center w-full h-full;
 }
-.fretboard {
-  @apply flex flex-col-reverse relative;
-  background: #725051;  /* rosewood: #725051, maple: #F4D5C3, ebony: #4D4B4C */
-}
 </style>
