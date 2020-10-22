@@ -5,7 +5,7 @@
             <button type="button" class="inline-flex justify-center w-full rounded-md
               border border-gray-700 px-4 py-2 bg-gray-800 text-sm leading-5
               transition ease-in-out duration-150"
-              :class="this.disabled ? 'text-gray-700 focus:border-gray-700 cursor-default'
+              :class="disabled ? 'text-gray-700 focus:border-gray-700 cursor-default'
                 : 'text-gray-400  hover:text-gray-200 focus:outline-none \
                 focus:border-indigo-300 focus:shadow-outline-indigo active:bg-gray-500 '"
               id="options-menu" aria-haspopup="true" aria-expanded="true"

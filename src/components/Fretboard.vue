@@ -10,10 +10,7 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
-import { computed } from 'vue';
-
-import { TUNINGS } from '@/utilities/constants';
+import useFretboard from '@/use/fretboard';
 import FretGrid from '@/components/FretGrid.vue';
 import GuitarString from '@/components/GuitarString.vue';
 
@@ -24,14 +21,9 @@ export default {
     GuitarString,
   },
   setup() {
-    const { state: { settings } } = useStore();
-
-    function getTuningNotes() {
-      return TUNINGS[settings.stringCount][settings.tuningIndex].notes;
-    }
-
+    const { tuningNotes } = useFretboard();
     return {
-      tuningNotes: computed(getTuningNotes),
+      tuningNotes,
     };
   },
 };

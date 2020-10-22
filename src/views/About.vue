@@ -51,7 +51,6 @@
 import AppFeatureBox from '@/components/ui/AppFeatureBox.vue';
 
 export default {
-  name: 'About',
   components: { AppFeatureBox },
 };
 </script>

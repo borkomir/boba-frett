@@ -10,7 +10,7 @@
           :disabled="isQuizInProgress"
         />
         <AppDropdown
-          :value="tuning"
+          :value="tuningIndex"
           :options="tuningOptions"
           @update="setTuning"
           :disabled="isQuizInProgress"
@@ -42,64 +42,52 @@
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
 
-import { CHROMATIC_SCALE, TUNINGS } from '@/utilities/constants';
+import useFretboard from '@/use/fretboard';
+import useQuiz from '@/use/quiz';
 
 export default {
   name: 'Settings',
   setup() {
-    const tunings = TUNINGS; // FIXME: no direct access to TUNINGS in computed arrow functions
-    const { commit, state: { settings, quiz } } = useStore();
+    const {
+      tunings,
+      addFret,
+      removeFret,
+      settings: { stringCount, tuningIndex, fretCount },
+    } = useFretboard();
 
-    const computedRefs = {
-      stringCount: computed(() => settings.stringCount),
-      stringCountOptions: computed(
-        () => Object.keys(tunings).map(
-          (c) => [parseInt(c, 10), `${c} strings`],
-        ),
+    const { isQuizInProgress, startQuiz } = useQuiz();
+
+    const stringCountOptions = computed(
+      () => Object.keys(tunings).map(
+        (c) => [parseInt(c, 10), `${c} strings`],
       ),
-      tuning: computed(() => settings.tuningIndex),
-      tuningNotes: computed(
-        () => tunings[settings.stringCount][settings.tuningIndex].notes,
+    );
+
+    const tuningOptions = computed(
+      () => Object.values(tunings[stringCount.value]).map(
+        (t, i) => [i, t.name],
       ),
-      tuningOptions: computed(
-        () => Object.values(tunings[settings.stringCount]).map(
-          (t, i) => [i, t.name],
-        ),
-      ),
-      isQuizInProgress: computed(() => quiz.questions.length > 0),
-    };
+    );
 
     const setStringCount = (option) => {
-      if (!computedRefs.isQuizInProgress.value) {
-        commit('setStringCount', option.newValue);
-      }
+      if (isQuizInProgress.value) return;
+
+      stringCount.value = option.newValue;
+      tuningIndex.value = 0; // reset tuning index
     };
 
     const setTuning = (option) => {
-      if (!computedRefs.isQuizInProgress.value) {
-        commit('setTuning', option.newValue);
-      }
-    };
+      if (isQuizInProgress.value) return;
 
-    const addFret = () => {
-      if (!computedRefs.isQuizInProgress.value) {
-        commit('addFret');
-      }
-    };
-
-    const removeFret = () => {
-      if (!computedRefs.isQuizInProgress.value) {
-        commit('removeFret');
-      }
+      tuningIndex.value = option.newValue;
     };
 
     const launchQuiz = () => {
-      if (!computedRefs.isQuizInProgress.value) {
-        commit('startQuiz');
-      }
+      if (isQuizInProgress.value) return;
+
+      startQuiz();
     };
 
     const methods = {
@@ -111,9 +99,12 @@ export default {
     };
 
     return {
-      settings,
-      chromaticScale: CHROMATIC_SCALE,
-      ...computedRefs,
+      stringCount,
+      tuningIndex,
+      fretCount,
+      stringCountOptions,
+      tuningOptions,
+      isQuizInProgress,
       ...methods,
     };
   },

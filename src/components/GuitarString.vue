@@ -3,20 +3,16 @@
     <Note
       v-for="(note, i) in stringNotes"
       :key="i"
-      :note="note"
       :stringIndex="stringIndex"
       :fret="i"
-      :highlighted="note===highlightedNote"
-      @selected="selectNote(i)"
-      @unselected="unselectNote(i)" />
+      :note="note" />
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
 
-import { getFretWidth, getStringNotes } from '@/utilities/notes';
+import useFretboard from '@/use/fretboard';
 import Note from '@/components/Note.vue';
 
 export default {
@@ -29,111 +25,48 @@ export default {
     Note,
   },
   setup(props) {
-    const store = useStore();
-    const { settings } = store.state;
-
-    const highlightedNote = computed(() => store.state.highlightedNote);
-
-    const stringNotes = computed(
-      () => getStringNotes(props.rootNote, settings.fretCount),
-    );
-
-    const selectNote = (index) => (
-      store.commit('addToSelected', { string: props.stringIndex, index })
-    );
-
-    const unselectNote = (index) => (
-      store.commit('removeFromSelected', { string: props.stringIndex, index })
-    );
+    const { getAllFretNotes } = useFretboard();
 
     return {
-      highlightedNote,
-      stringNotes,
-      getFretWidth,
-      getStringNotes,
-      selectNote,
-      unselectNote,
+      stringNotes: computed(() => getAllFretNotes(props.rootNote)),
     };
   },
 };
 </script>
 
-<style scoped lang="scss">
-// TODO: use postcss tailwind applies
+<style scoped lang="postcss">
 .string {
-  display: flex;
-  font-family: monospace;
-  text-align: left;
+  @apply flex relative text-left w-full font-mono;
+
   height: 40px;
-  width: 100%;
-  position: relative;
+}
 
-  .fret-space {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    text-align: center;
+.string:before {
+  @apply absolute w-full z-20;
 
-    &:first-child {
-      width: 30px;
-    }
-  }
+  content: '';
+  top: 50%;
+  color: #bbb;
+  background: #eee repeating-linear-gradient(
+    60deg, transparent, transparent 2px, currentColor 3px, currentColor 5px
+  );
+  transform: translateY(-50%);
+  box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1);
+}
 
-  &:before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    top: 50%;
-    color: #bbb;
-    background: #eee repeating-linear-gradient(
-      60deg, transparent, transparent 2px, currentColor 3px, currentColor 5px
-    );
-    transform: translateY(-50%);
-    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1);
-    z-index: 20;
-  }
+.string:nth-of-type(7):before { height: 2px; }
+.string:nth-of-type(6):before { height: 2px; }
+.string:nth-of-type(5):before { height: 3px; }
+.string:nth-of-type(4):before { height: 4px; }
+.string:nth-of-type(3):before { height: 5px; }
+.string:nth-of-type(2):before { height: 6px; }
+.string:nth-of-type(1):before { height: 7px; }
 
-  &:nth-of-type(7) {
-    &:before {
-      height: 2px;
-    }
-  }
+.string .fret-space {
+  @apply flex items-center justify-center text-center;
+}
 
-  &:nth-of-type(6) {
-    &:before {
-      height: 2px;
-    }
-  }
-
-  &:nth-of-type(5) {
-    &:before {
-      height: 3px;
-    }
-  }
-
-  &:nth-of-type(4) {
-    &:before {
-      height: 4px;
-    }
-  }
-
-  &:nth-of-type(3) {
-    &:before {
-      height: 5px;
-    }
-  }
-
-  &:nth-of-type(2) {
-    &:before {
-      height: 6px;
-    }
-  }
-
-  &:nth-of-type(1) {
-    &:before {
-      height: 7px;
-    }
-  }
+.string .fret-space:first-child {
+  width: 30px;
 }
 </style>

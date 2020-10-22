@@ -7,22 +7,23 @@
     <span
       class="note z-30"
       :class="{
-        'concelead': !isVisible,
-        highlighted,
+        'concelead': !notesVisible,
+        highlighted: note===highlightedNote,
         selected: isSelected,
         correct: isSelectedCorrectly,
         incorrect: isSelectedIncorrectly
       }"
     >
-      {{ isVisible ? note : '?' }}
+      {{ notesVisible ? note : '?' }}
     </span>
   </div>
 </template>
 
 <script>
-import { useStore } from 'vuex';
 import { computed } from 'vue';
-import { getFretWidth } from '@/utilities/notes';
+
+import useFretboard from '@/use/fretboard';
+import useQuiz from '@/use/quiz';
 
 export default {
   name: 'Note',
@@ -30,68 +31,76 @@ export default {
     note: String,
     stringIndex: Number,
     fret: Number,
-    highlighted: Boolean,
   },
-  setup(props, { emit }) {
-    const store = useStore();
-    const { commit, state } = store;
-    const { settings, quiz } = state;
+  setup(props) {
+    const {
+      calculateFretWidth,
+      highlightedNote,
+      notesVisible,
+    } = useFretboard();
 
-    const isVisible = computed(() => state.notesVisible);
-    const isQuizInProgress = computed(() => quiz.questions.length > 0);
-    const currentQuestionIndex = computed(() => quiz.scores.length - 1);
-    const fretWidth = computed(() => (
-      getFretWidth(props.fret, settings.fretCount + 1)
-    ));
+    const {
+      scores,
+      isQuizInProgress,
+      selectedNotes,
+      correctAnswers,
+      addToSelected,
+      removeFromSelected,
+    } = useQuiz();
+
+    const currentQuestionIndex = computed(() => scores.value.length - 1);
 
     const isSelected = computed(() => (
-      quiz.selectedNotes[props.stringIndex]
-        && quiz.selectedNotes[props.stringIndex].indexOf(props.fret) !== -1
+      selectedNotes.value[props.stringIndex]
+      && selectedNotes.value[props.stringIndex].indexOf(props.fret) !== -1
     ));
 
     const isSelectedCorrectly = computed(() => (
       isQuizInProgress.value
-      && currentQuestionIndex.value >= 0
-      && isVisible.value
       && isSelected.value
-      && quiz.correctAnswers[currentQuestionIndex.value][
+      && notesVisible.value
+      && currentQuestionIndex.value >= 0
+      && correctAnswers.value[currentQuestionIndex.value][
         props.stringIndex].indexOf(props.fret) !== -1
     ));
 
     const isSelectedIncorrectly = computed(() => (
       isQuizInProgress.value
       && currentQuestionIndex.value >= 0
-      && isVisible.value
+      && notesVisible.value
       && (
         (
           isSelected.value
-          && quiz.correctAnswers[currentQuestionIndex.value][
+          && correctAnswers.value[currentQuestionIndex.value][
             props.stringIndex].indexOf(props.fret) === -1
         ) || (
           !isSelected.value
-          && quiz.correctAnswers[currentQuestionIndex.value][
+          && correctAnswers.value[currentQuestionIndex.value][
             props.stringIndex].indexOf(props.fret) !== -1
         )
       )
     ));
 
     const handleClick = () => {
-      if (isVisible.value) {
-        // learning mode
-        if (!isQuizInProgress.value) {
-          commit('setHighlightedNote', props.note);
+      if (isQuizInProgress.value) {
+        // quiz mode
+        if (!notesVisible.value) {
+          (isSelected.value ? removeFromSelected : addToSelected)(
+            { string: props.stringIndex, index: props.fret },
+          );
         }
       } else {
-        // quiz mode
-        emit(isSelected.value ? 'unselected' : 'selected');
+        // learning mode
+        highlightedNote.value = props.note;
       }
     };
 
     return {
-      isVisible,
+      highlightedNote,
+      notesVisible,
       isQuizInProgress,
       currentQuestionIndex,
-      fretWidth,
+      fretWidth: computed(() => calculateFretWidth(props.fret)),
       isSelected,
       isSelectedCorrectly,
       isSelectedIncorrectly,
@@ -153,7 +162,6 @@ export default {
   @apply text-white bg-black opacity-100 text-center rounded-md text-xs leading-none;
   @apply relative p-1;
 
-  font-family: 'Roboto Mono', 'Courier New', Courier, monospace;
   text-shadow: 1px 1px rgba(0, 0, 0, 0.4);
   left: -3px;
 }
